@@ -30,6 +30,7 @@ option(FTL_BUILD_TESTS "Build FiberTaskingLib tests" ON)
 option(FTL_BUILD_BENCHMARKS "Build FiberTaskingLib benchmarks" ON)
 option(FTL_VALGRIND "Link and test with Valgrind" OFF)
 option(FTL_FIBER_STACK_GUARD_PAGES "Add guard pages around the fiber stacks" OFF)
+option(FTL_CPP_17 "Enable C++17 features" OFF)
 
 # Include Valgrind
 if (FTL_VALGRIND)
@@ -46,9 +47,16 @@ if (FTL_BUILD_TESTS)
 	include(CTest)
 endif()
 
-set(CMAKE_CXX_STANDARD 11) # C++11...
-set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
-set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
+if (FTL_CPP_17)
+	set(CMAKE_CXX_STANDARD 17) # C++17...
+	set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
+	set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
+else()
+	set(CMAKE_CXX_STANDARD 11) # C++11...
+	set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
+	set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
+endif()
+
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
