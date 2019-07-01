@@ -47,8 +47,9 @@ public:
 	 *
 	 * @param taskScheduler    ftl::TaskScheduler that will be using this mutex.
 	 */
-	explicit Fibtex(TaskScheduler *taskScheduler)
-	        : m_ableToSpin(taskScheduler->GetThreadCount() > 1), m_taskScheduler(taskScheduler), m_atomicCounter(taskScheduler, 0) {
+	explicit Fibtex(TaskScheduler *taskScheduler, uint fiberSlots = NUM_WAITING_FIBER_SLOTS)
+	        : m_ableToSpin(taskScheduler->GetThreadCount() > 1), m_taskScheduler(taskScheduler),
+	          m_atomicCounter(taskScheduler, 0, fiberSlots) {
 	}
 
 	Fibtex(const Fibtex &) = delete;
@@ -95,7 +96,7 @@ public:
 			FTL_PAUSE();
 		}
 
-		// Spinning didn't grab the lock, we're in for the long hall. Yield.
+		// Spinning didn't grab the lock, we're in for the long haul. Yield.
 		lock(pinToThread);
 	}
 
@@ -166,7 +167,7 @@ public:
 	 * Gets ownership of the mutex without locking it. Must be passed a locked mutex.
 	 *
 	 * @param mutex     Mutex to adopt ownership of.
-	 * @param al        ftl::adopt_lock. Value unused.
+	 * @param al        std::adopt_lock_t. Value unused.
 	 */
 	LockGuard(M &mutex, std::adopt_lock_t al) noexcept : m_mutex(mutex) {
 		// Do not lock mutex
@@ -207,7 +208,7 @@ public:
 	 * Gets ownership of the mutex without locking it. Must be passed a locked mutex.
 	 *
 	 * @param mutex    Mutex to adopt ownership of.
-	 * @param al       ftl::adopt_lock. Value unused.
+	 * @param al       std::adopt_lock_t. Value unused.
 	 */
 	SpinLockGuard(M &mutex, std::adopt_lock_t al) noexcept : m_mutex(mutex) {
 		// Do not lock mutex
@@ -247,7 +248,7 @@ public:
 	 * Gets ownership of the mutex without locking it. Must be passed a locked mutex.
 	 *
 	 * @param mutex     Mutex to adopt ownership of.
-	 * @param al        ftl::adopt_lock. Value unused.
+	 * @param al        std::adopt_lock_t. Value unused.
 	 */
 	InfiniteSpinLockGuard(M &mutex, std::adopt_lock_t al) noexcept : m_mutex(mutex) {
 		// Do not lock mutex
@@ -296,7 +297,7 @@ public:
 	 * Points UniqueLock at mutex but does not actually lock the lock.
 	 *
 	 * @param mutex     Mutex to hold
-	 * @param dl        ftl::defer_lock. Unused.
+	 * @param dl        std::defer_lock_t. Unused.
 	 */
 	UniqueLock(M &mutex, std::defer_lock_t dl) noexcept {
 		// Don't actually lock mutex
@@ -308,7 +309,7 @@ public:
 	 * Points UniqueLock at mutex and tries to lock the lock.
 	 *
 	 * @param m              Mutex to hold
-	 * @param tl             ftl::try_to_lock. Unused.
+	 * @param tl             std::try_to_lock_t. Unused.
 	 * @param pinToThread    If the fiber should resume on the same thread as it started on pre-lock.
 	 */
 	UniqueLock(M &m, std::try_to_lock_t tl, bool pinToThread = false) {
@@ -321,7 +322,7 @@ public:
 	 * Points UniqueLock at mutex, assuming it is already held. Does not lock the lock.
 	 *
 	 * @param m     Mutex to hold
-	 * @param al    ftl::``adopt_lock. Unused.
+	 * @param al    std::adopt_lock_t. Unused.
 	 */
 	UniqueLock(M &m, std::adopt_lock_t al) noexcept {
 		// Don't actually lock mutex

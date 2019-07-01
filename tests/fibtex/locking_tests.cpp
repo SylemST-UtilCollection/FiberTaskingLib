@@ -30,7 +30,7 @@
 
 struct MutexData {
 	MutexData(ftl::TaskScheduler *scheduler, std::size_t const startingNumber)
-	        : CommonMutex(scheduler), SecondMutex(scheduler), Counter(startingNumber) {
+	        : CommonMutex(scheduler, 12), SecondMutex(scheduler, 12), Counter(startingNumber) {
 	}
 
 	ftl::Fibtex CommonMutex;
@@ -52,7 +52,7 @@ void LockGuardTest(ftl::TaskScheduler * /*scheduler*/, void *arg) {
 void SpinLockGuardTest(ftl::TaskScheduler * /*scheduler*/, void *arg) {
 	auto *data = reinterpret_cast<MutexData *>(arg);
 
-	//	ftl::SpinLockGuard<ftl::Fibtex> lg(data->common_mutex);
+	ftl::SpinLockGuard<ftl::Fibtex> lg(data->CommonMutex);
 
 	// Intentional non-atomic increment
 	std::size_t value = data->Counter.load(std::memory_order_acquire);
@@ -63,7 +63,7 @@ void SpinLockGuardTest(ftl::TaskScheduler * /*scheduler*/, void *arg) {
 void InfiniteSpinLockGuardTest(ftl::TaskScheduler * /*scheduler*/, void *arg) {
 	auto *data = reinterpret_cast<MutexData *>(arg);
 
-	//	ftl::InfiniteSpinLockGuard<ftl::Fibtex> lg(data->common_mutex);
+	ftl::InfiniteSpinLockGuard<ftl::Fibtex> lg(data->CommonMutex);
 
 	// Intentional non-atomic increment
 	std::size_t value = data->Counter.load(std::memory_order_acquire);
@@ -111,26 +111,26 @@ void ScopeGuardTest(ftl::TaskScheduler * /*scheduler*/, void *arg) {
 
 void FutexMainTask(ftl::TaskScheduler *taskScheduler, void *arg) {
 	auto &md = *reinterpret_cast<MutexData *>(arg);
+
 	ftl::AtomicCounter c(taskScheduler);
 
 	constexpr std::size_t iterations = 2000;
-
 	for (std::size_t i = 0; i < iterations; ++i) {
-		// taskScheduler->AddTask(ftl::Task{lock_guard_test, &md}, &c);
-		// taskScheduler->AddTask(ftl::Task{lock_guard_test, &md}, &c);
-		// taskScheduler->AddTask(ftl::Task{spin_lock_guard_test, &md}, &c);
-		// taskScheduler->AddTask(ftl::Task{spin_lock_guard_test, &md}, &c);
-		// taskScheduler->AddTask(ftl::Task{infinite_spin_lock_guard_test, &md}, &c);
-		// taskScheduler->AddTask(ftl::Task{infinite_spin_lock_guard_test, &md}, &c);
+		taskScheduler->AddTask(ftl::Task{LockGuardTest, &md}, &c);
+		taskScheduler->AddTask(ftl::Task{LockGuardTest, &md}, &c);
+		taskScheduler->AddTask(ftl::Task{SpinLockGuardTest, &md}, &c);
+		taskScheduler->AddTask(ftl::Task{SpinLockGuardTest, &md}, &c);
+		taskScheduler->AddTask(ftl::Task{InfiniteSpinLockGuardTest, &md}, &c);
+		taskScheduler->AddTask(ftl::Task{InfiniteSpinLockGuardTest, &md}, &c);
 		taskScheduler->AddTask(ftl::Task{UniqueLockGuardTest, &md}, &c);
 		taskScheduler->AddTask(ftl::Task{UniqueLockGuardTest, &md}, &c);
-		taskScheduler->AddTask(ftl::Task{ScopeGuardTest, &md}, &c);
-		taskScheduler->AddTask(ftl::Task{ScopeGuardTest, &md}, &c);
+		//		taskScheduler->AddTask(ftl::Task{ScopeGuardTest, &md}, &c);
+		//		taskScheduler->AddTask(ftl::Task{ScopeGuardTest, &md}, &c);
 
 		taskScheduler->WaitForCounter(&c, 0);
 	}
 
-	GTEST_ASSERT_EQ(md.Counter.load(std::memory_order_acquire), 7 * 2 * iterations);
+	GTEST_ASSERT_EQ(md.Counter.load(std::memory_order_acquire), 6 * 2 * iterations);
 }
 
 // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
