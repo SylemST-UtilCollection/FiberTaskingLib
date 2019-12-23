@@ -29,7 +29,14 @@
 #include <tuple>
 #include <cmath>
 #include <utility>
+
+#ifdef __MINGW32__
+    #include <mingw.future.h>
+#else
 #include <future>
+#endif
+
+
 #include <cstddef>
 
 namespace nonius {
@@ -328,4 +335,3 @@ namespace nonius {
 } // namespace nonius
 
 #endif // NONIUS_DETAIL_ANALYSIS_HPP
-

@@ -32,8 +32,13 @@
 
 #include <atomic>
 #include <climits>
-#include <condition_variable>
-#include <mutex>
+#ifdef __MINGW32__
+    #include <mingw.mutex.h>
+    #include <mingw.condition_variable.h>
+#else
+    #include <mutex>
+    #include <condition_variable>
+#endif
 #include <vector>
 
 namespace ftl {

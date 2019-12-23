@@ -28,7 +28,11 @@
 #include "ftl/typedefs.h"
 
 #include <cassert>
-#include <thread>
+#ifdef __MINGW32__
+    #include <mingw.thread.h>
+#else
+    #include <thread>
+#endif
 
 #if defined(FTL_WIN32_THREADS)
 
@@ -36,7 +40,7 @@
 #	ifndef NOMINMAX
 #		define NOMINMAX
 #	endif // #ifndef NOMINMAX
-#	include <Windows.h>
+#	include <windows.h>
 
 #	include <atomic>
 #	include <process.h>

@@ -12,9 +12,9 @@
  # Licensed under the Apache License, Version 2.0 (the "License");
  # you may not use this file except in compliance with the License.
  # You may obtain a copy of the License at
- # 
+ #
  # http://www.apache.org/licenses/LICENSE-2.0
- # 
+ #
  # Unless required by applicable law or agreed to in writing, software
  # distributed under the License is distributed on an "AS IS" BASIS,
  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,7 +66,7 @@ endif()
 
 SetSourceGroup(NAME Core
 	PREFIX FTL
-	SOURCE_FILES 
+	SOURCE_FILES
 				 ../include/ftl/task.h
 	             ../include/ftl/atomic_counter.h
 	             atomic_counter.cpp
@@ -94,6 +94,7 @@ set(FIBER_TASKING_LIB_SRC
 
 add_library(ftl STATIC ${FIBER_TASKING_LIB_SRC})
 target_link_libraries(ftl boost_context ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(ftl pthread)
 target_include_directories(ftl PUBLIC ../include)
 
 # Remove the prefix
